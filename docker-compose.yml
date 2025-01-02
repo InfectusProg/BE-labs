@@ -1,0 +1,8 @@
+services:
+  backendlabs_1:
+    image: be_lab_1
+    build:
+      context: .
+      dockerfile: BE-lab1/Dockerfile
+    ports:
+      - "5444:8080"
