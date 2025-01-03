@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BE_lab2.Models
 {
@@ -6,5 +7,9 @@ namespace BE_lab2.Models
     {
         [Required]
         public string Name { get; set; }
+        [Display(Name = "Currency")]
+        public int? CurrencyId { get; set; }
+        [ForeignKey("CurrencyId")]
+        public virtual Currency Currency { get; set; }
     }
 }

@@ -1,4 +1,7 @@
 
+using BE_lab2.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace BE_lab2
 {
     public class Program
@@ -6,7 +9,7 @@ namespace BE_lab2
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
