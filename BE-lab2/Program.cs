@@ -9,8 +9,10 @@ namespace BE_lab2
     {
         public static void Main(string[] args)
         {
+            string? getEnv = Environment.GetEnvironmentVariable("DefaultConnection");
+
             var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(getEnv));
             builder.Services.AddScoped<IDbInitializer, DbInitialize>();
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
