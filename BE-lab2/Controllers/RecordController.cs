@@ -1,5 +1,7 @@
-﻿using BE_lab2.Models;
+﻿using BE_lab2.Data;
+using BE_lab2.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BE_lab2.Controllers;
 
@@ -7,78 +9,126 @@ namespace BE_lab2.Controllers;
 [ApiController]
 public class RecordController : ControllerBase
 {
-    private static List<Record> records = new List<Record>
-    {
-        new Record { Id = 1, UserId = 1, CategoryId = 1, Date = DateTime.Now, TotalPrice = 1},
-        new Record { Id = 2, UserId = 3, CategoryId = 1, Date = DateTime.Now, TotalPrice = 2},
-        new Record { Id = 3, UserId = 2, CategoryId = 2, Date = DateTime.Now, TotalPrice = 3},
-        new Record { Id = 4, UserId = 2, CategoryId = 3, Date = DateTime.Now, TotalPrice = 4}
-    };
+    private readonly AppDbContext _db;
 
-    [HttpGet("/record/{record_id}")]
-    public ActionResult<Record> GetRecordById(int record_id)
+    public RecordController(AppDbContext db)
     {
-        var record = records.FirstOrDefault(p => p.Id == record_id);
+        _db = db;
+    }
+
+    [HttpGet("/record/{recordId}")]
+    public async Task<IActionResult> GetRecordByIdAsync(int recordId)
+    {
+        var record = await _db.Records
+            .Include(r => r.User)
+            .Include(r => r.Category)
+            .FirstOrDefaultAsync(r => r.Id == recordId);
+
         if (record == null)
         {
-            return NotFound();
+            return NotFound($"Record with ID {recordId} not found.");
         }
+
         return Ok(record);
     }
 
-    [HttpDelete("/record/{record_id}")]
-    public IActionResult DeleteRecordById(int record_id)
+    [HttpDelete("/record/{recordId}")]
+    public async Task<IActionResult> DeleteRecordByIdAsync(int recordId)
     {
-        var record = records.FirstOrDefault(p => p.Id == record_id);
+        var record = await _db.Records
+            .Include(r => r.User)
+            .Include(r => r.Category)
+            .FirstOrDefaultAsync(r => r.Id == recordId);
+
         if (record == null)
         {
-            return NotFound();
+            return NotFound($"Record with ID {recordId} not found.");
         }
-        records.Remove(record);
-        return Ok("You delete this record");
+
+        _db.Records.Remove(record);
+        await _db.SaveChangesAsync();
+
+        return Ok($"Record with ID {recordId} has been successfully deleted.");
     }
 
     [HttpPost("/record")]
-    public IActionResult AddRecord(int userId, int categoryId, decimal total)
+    public async Task<IActionResult> AddRecordAsync(int userId, int categoryId, decimal total, int? currencyId = null)
     {
-        Record record = new Record()
+        var user = await _db.Users
+            .Include(u => u.Currency)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            return BadRequest("Invalid user ID.");
+        }
+
+        var categoryExists = await _db.Categories.AnyAsync(c => c.Id == categoryId);
+        if (!categoryExists)
+        {
+            return BadRequest("Invalid category ID.");
+        }
+
+        Currency? currency;
+        if (currencyId.HasValue)
+        {
+            currency = await _db.Currencies.FindAsync(currencyId.Value);
+            if (currency == null)
+            {
+                return BadRequest("Invalid currency ID.");
+            }
+        }
+        else
+        {
+            currency = user.Currency;
+        }
+
+        var record = new Record
         {
             UserId = userId,
             CategoryId = categoryId,
-            Date = DateTime.Now,
-            TotalPrice = total
+            Date = DateTime.UtcNow,
+            TotalPrice = total,
+            CurrencyId = currency.Id
         };
-        record.Id = records.Max(p => p.Id) + 1;
-        records.Add(record);
-        return CreatedAtAction(nameof(GetRecordById), new { record_id = record.Id }, record);
+
+        await _db.Records.AddAsync(record);
+        await _db.SaveChangesAsync();
+
+        return Ok("Add a new Record");
     }
 
+
     [HttpGet("/record")]
-    public ActionResult GetRecord(int? userId, int? categoryId)
+    public async Task<IActionResult> GetRecordAsync(int? userId, int? categoryId)
     {
         if (userId == null && categoryId == null)
         {
-            return BadRequest("You don't write a params");
+            return BadRequest("You must provide at least one filter parameter.");
         }
 
-        var filteredRecords = records.AsQueryable();
+        var filteredRecords = _db.Records
+            .Include(r => r.User)
+            .Include(r => r.Category)
+            .Include(r => r.Currency)
+            .AsQueryable();
 
-        if (userId != null)
+        if (userId.HasValue)
         {
             filteredRecords = filteredRecords.Where(p => p.UserId == userId);
         }
 
-        if (categoryId != null)
+        if (categoryId.HasValue)
         {
             filteredRecords = filteredRecords.Where(p => p.CategoryId == categoryId);
         }
 
-        if (!filteredRecords.Any())
+        var results = await filteredRecords.ToListAsync();
+
+        if (!results.Any())
         {
             return NotFound("No records found with the specified criteria.");
         }
 
-        return Ok(filteredRecords);
+        return Ok(results);
     }
-
 }
