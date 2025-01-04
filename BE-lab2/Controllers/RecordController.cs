@@ -1,5 +1,6 @@
 ﻿using BE_lab2.Data;
 using BE_lab2.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace BE_lab2.Controllers;
 
 [Route("record")]
 [ApiController]
+[Authorize]
 public class RecordController(AppDbContext db) : ControllerBase
 {
     private async Task<Record?> GetRecordById(int recordId)

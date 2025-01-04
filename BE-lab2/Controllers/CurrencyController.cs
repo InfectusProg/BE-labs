@@ -1,13 +1,15 @@
-﻿using BE_lab2.Data;
-using BE_lab2.Models;
-using BE_lab2.Validators;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using BE_lab2.Data;
+using BE_lab2.Models;
+using BE_lab2.Validators;
 
 namespace BE_lab2.Controllers;
 
 [Route("[controller]")]
 [ApiController]
+[Authorize]
 public class CurrencyController : ControllerBase
 {
     private readonly AppDbContext _db;

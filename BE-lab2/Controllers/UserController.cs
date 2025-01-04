@@ -1,7 +1,8 @@
-﻿using BE_lab2.Data;
+﻿using System.Security.Cryptography;
+using BE_lab2.Data;
 using BE_lab2.Models;
 using BE_lab2.Validators;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,7 @@ namespace BE_lab2.Controllers;
 
 [Route("[controller]")]
 [ApiController]
+[Authorize]
 public class UserController(AppDbContext db) : ControllerBase
 {
     private async Task<IActionResult?> ValidateUserNameAsync(string userName)

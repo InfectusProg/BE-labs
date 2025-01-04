@@ -11,5 +11,8 @@ namespace BE_lab2.Models
         public int? CurrencyId { get; set; }
         [ForeignKey("CurrencyId")]
         public virtual Currency Currency { get; set; }
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; }
     }
 }
