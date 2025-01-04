@@ -7,6 +7,8 @@ services:
     ports:
       - "5444:8080"
   backendlabs_2:
+    depends_on: 
+      - postgresLab_3
     image: be_lab_2
     build:
       context: .

@@ -1,4 +1,3 @@
-
 using BE_lab2.Data;
 using BE_lab2.Initializer;
 using Microsoft.EntityFrameworkCore;
@@ -9,10 +8,9 @@ namespace BE_lab2
     {
         public static void Main(string[] args)
         {
-            string? getEnv = Environment.GetEnvironmentVariable("DefaultConnection");
-
+            string? connectionEnv = Environment.GetEnvironmentVariable("DefaultConnection");
             var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(getEnv));
+            builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionEnv));
             builder.Services.AddScoped<IDbInitializer, DbInitialize>();
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -25,7 +23,11 @@ namespace BE_lab2
                 var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
                 dbInitializer.Initialize();
             }
-
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
