@@ -9,11 +9,11 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string? getEnv = Environment.GetEnvironmentVariable("DefaultConnection");
-string? issuer = Environment.GetEnvironmentVariable("Issuer");
-string? audience = Environment.GetEnvironmentVariable("Audience");
-string? key = Environment.GetEnvironmentVariable("Key");
-string? tokenValidityMins = Environment.GetEnvironmentVariable("TokenValidityMins");
+string? getEnv = Environment.GetEnvironmentVariable("DefaultConnection") ?? builder.Configuration.GetConnectionString("DefaultConnection");
+string? issuer = Environment.GetEnvironmentVariable("Issuer") ?? builder.Configuration.GetSection("JWT")["Issuer"];
+string? audience = Environment.GetEnvironmentVariable("Audience") ?? builder.Configuration.GetSection("JWT")["Audience"];
+string? key = Environment.GetEnvironmentVariable("Key") ?? builder.Configuration.GetSection("JWT")["Key"];
+string? tokenValidityMins = Environment.GetEnvironmentVariable("TokenValidityMins") ?? builder.Configuration.GetSection("JWT")["TokenValidityMins"];
 
 builder.Services.Configure<JwtOptions>(options =>
 {

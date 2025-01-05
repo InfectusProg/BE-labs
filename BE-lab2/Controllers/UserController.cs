@@ -102,7 +102,7 @@ public class UserController(AppDbContext db) : ControllerBase
 
         return Ok("User successfully added.");
     }
-
+    
     [HttpGet("/users")]
     public async Task<ActionResult<IEnumerable<User>>> GetAllUsersAsync()
     {

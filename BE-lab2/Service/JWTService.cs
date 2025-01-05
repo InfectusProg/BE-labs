@@ -48,7 +48,8 @@ public class JWTService
         {
             Subject = new ClaimsIdentity(new[]
             {
-                new Claim(JwtRegisteredClaimNames.Name, request.UserName)
+                //new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())
+                new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())
             }),
             Expires = tokenExpiryTimeStap,
             Issuer = issuer,
@@ -101,5 +102,4 @@ public class JWTService
 
         return await _db.Currencies.FindAsync(currencyId);
     }
-
 }
